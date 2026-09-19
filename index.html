@@ -885,10 +885,16 @@ function renderPartyHistory(partyName) {
         h("thead",{},h("tr",{},...["Date","Items","Total Cost","Paid","Note","Actions"].map(x=>h("th",{},x)))),
         h("tbody",{},...purchases.map(p=>{
           const cost=(p.items||[]).reduce((s,it)=>s+purchaseItemAmount(it),0);
-          const summary=(p.items||[]).map(it=>it.item+" ×"+it.qty).join(", ");
           return h("tr",{},
             h("td",{},p.date||"N/A"),
-            h("td",{style:{fontWeight:600,color:"#ccdaee"}},summary||"N/A"),
+            h("td",{style:{fontWeight:600,color:"#ccdaee"}},
+              h("div",{style:{display:"flex",flexDirection:"column",gap:"3px"}},
+                ...(p.items||[]).map(it=>h("div",{style:{fontSize:"12px"}},
+                  it.item||"N/A", " — ", h("span",{style:{color:"#93a5c4"}},it.qty+" × Rs. "+(parseFloat(it.unitCost)||0).toLocaleString()),
+                  " = ", h("span",{style:{color:"#4caf82",fontWeight:600}},"Rs. "+purchaseItemAmount(it).toLocaleString())
+                ))
+              )
+            ),
             h("td",{},"Rs. "+cost.toLocaleString()),
             h("td",{},h("input",{className:"inp",type:"number",min:"0",style:{padding:"6px 8px",fontSize:"12px",width:"100px",color:"#4caf82"},value:p.amountPaid||"0",
               onInput:e=>{ const purchases=state.purchases.map(x=>x.id===p.id?{...x,amountPaid:e.target.value}:x); setState({purchases}); }})),
@@ -1052,11 +1058,17 @@ function renderPurchases() {
         h("tbody",{},...[...state.purchases].reverse().map(p=>{
           const items=p.items||[];
           const cost=items.reduce((s,it)=>s+purchaseItemAmount(it),0);
-          const summary=items.map(it=>it.item+" ×"+it.qty).join(", ");
           return h("tr",{},
             h("td",{},p.date||"N/A"),
             h("td",{},p.party?h("button",{style:{background:"none",border:"none",color:"#3a8fd4",cursor:"pointer",textDecoration:"underline",fontSize:"13px",padding:"0"},onClick:()=>setState({partyHistoryName:p.party})},p.party):"N/A"),
-            h("td",{style:{fontWeight:600,color:"#ccdaee"}},summary||"N/A"),
+            h("td",{style:{fontWeight:600,color:"#ccdaee"}},
+              h("div",{style:{display:"flex",flexDirection:"column",gap:"3px"}},
+                ...items.map(it=>h("div",{style:{fontSize:"12px"}},
+                  it.item||"N/A", " — ", h("span",{style:{color:"#93a5c4"}},it.qty+" × Rs. "+(parseFloat(it.unitCost)||0).toLocaleString()),
+                  " = ", h("span",{style:{color:"#4caf82",fontWeight:600}},"Rs. "+purchaseItemAmount(it).toLocaleString())
+                ))
+              )
+            ),
             h("td",{},"Rs. "+cost.toLocaleString()),
             h("td",{},h("input",{className:"inp",type:"number",min:"0",style:{padding:"6px 8px",fontSize:"12px",width:"100px",color:"#4caf82"},value:p.amountPaid||"0",
               onInput:e=>{ const purchases=state.purchases.map(x=>x.id===p.id?{...x,amountPaid:e.target.value}:x); setState({purchases}); }})),
